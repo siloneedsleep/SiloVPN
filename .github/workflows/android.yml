@@ -3,7 +3,7 @@ name: Build SiloVPN APK
 on:
   push:
     branches: [ "main", "master" ]
-  workflow_dispatch: # Cho phép bấm nút Build thủ công trên giao diện GitHub
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,13 +21,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # Tự động tạo wrapper nếu repo chưa có gradlew để tránh lỗi chmod
-      - name: Ensure Gradle Wrapper
+      - name: Generate Debug Keystore
         run: |
-          if [ ! -f "gradlew" ]; then
-            gradle wrapper
-          fi
-          chmod +x gradlew
+          keytool -genkey -v -keystore debug.keystore -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias androiddebugkey -storepass android -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
